@@ -1,0 +1,185 @@
+---
+title: "homework6"
+format: html
+editor: visual
+---
+
+## Task 1: Conceptual Questions
+
+1. What is the purpose of *lapply()* function? What is the equivalent *purrr* funtion?
+
+2. Suppose we have a list called my_list. Each element of the list is a numeric data frame (all columns are numeric). We want to use *lapply()* to run the code or *cor(numeric_matric, method = "kendall") on each element of the list. Write code to do this below. 
+
+3. Whar are two advantages of using *purrr* functions instead of *BaseR* apply family?
+
+4. What is a side-effect function?
+
+5. Why can you name a variable *sd* in a function and ot cause any issues with the sd function? 
+
+
+## Task 2: Writing R Functions 
+
+1. When we start doing machine learning later in the course, a common metric used to evaluate predictions is called Root Mean Square Error (RMSE). 
+For a given set of responses _*y1,...,yn the RMSE is defined as 
+**add picture**
+
+Write a basic function (call it getRMSE()) that takes in a vector of responses and a vector of predictions and outputs RMSE
+- If a value is missing dor the vector of responses (i.e. an NA is present), allow for addtional arguments to the mean() function (elipses) that removes the NA values in the computaton
+
+write code here 
+```{r}
+
+```
+
+2. Run the following code to create some response values and predictions
+```{r}
+set.seed(10)
+n <- 100 
+x <- runif(n)
+resp <- 3 + 10 * x + rnorm(n)
+pred <- predict(lm(resp - x), data.frame(x))
+```
+
+test RMSE function using this data 
+```{r}
+
+```
+
+test again after manually resplaces two of the response values with missing values (NA_real_)(just assign two valyes to NA_real_)
+
+Test RMSE function with and without specifying the behavior to deal with missing values 
+```{r}
+#testing with specifying dealing with missing values 
+```
+
+```{r}
+#testing without specifying how to deal with missing values 
+```
+
+3. Another common metric for evaluating predictions is mean absolute deviation givin by 
+**add picture**
+Write a function called getMAE() that follows the specifications of the getRMSE() function
+```{r}
+getMAE <-
+```
+
+4. Run the following code to create some response values and predictions
+```{r}
+set.seed(10)
+n <- 100
+x <- runif(n)
+resp <- 3 + 10 * x + rnorm(n)
+pred <- predict(lm(resp ~ x), data.frame(x))
+```
+
+Test MAE function using this data 
+```{r}
+
+```
+
+Repeat after replacing two of the response values with missing values (NA_real_)
+- Test MAE function with and without specifying the behavior to deal with the missing values
+```{r}
+#Testing with specifying how to deal with missing values 
+```
+
+```{r}
+#Testing without specifying how to deal with missing values 
+```
+
+5. Lets create a **wrapper** function that can be used to get either or both metrics returned with a single function call. DO not rewwrite your above two functions, call them inside the wrapper function (we would call getRMSE() and getMAE() functions **helper** functions). When returning your values, give them appropriate names
+additionally the wrapper function should 
+- check that the two numeric(atomic) vectors have been passes (consider is.vector(), is.atomic() and is.numeric()). If not, the function should stop and print an informative message.
+- Return both metrics by default and include names. The behavior should be able to be changed using a character string of metrics to find 
+```{r}
+
+```
+
+6. Run the following code to create some response values and predictions
+```{r}
+set.seed(10)
+n <- 100
+x <- runif(n)
+resp <- 3 + 10 * x + rnorm(n)
+pred <- predict(lm(resp ~ x), data.frame(x))
+```
+
+Test your new function using this data. Call it once asking for each metric individually and once specifying both metrics
+```{r}
+
+```
+
+Repeat with replacing two of the response values with missing values (NA_real_)
+```{r}
+
+```
+
+Finally, test your function by passing it incorrect data (i.e. a data frame or something else instead of vectors)
+```{r}
+
+```
+
+## Task 3: Practice with purrr
+
+Let’s create an interesting list object we can play around with
+```{r}
+ lm_fit1 <- lm(Sepal.Length ~ Sepal.Width + Species, data = iris)
+```
+
+- pull of the coefficients list element using $, coef(), and the pluck() function from purrr
+
+lets fit a number of different models with the code below 
+```{r}
+lm_fit2 <- lm(Sepal.Length ~ Sepal.Width, data = iris)
+lm_fit3 <- lm(Sepal.Length ~ Petal.Width + Sepal.Width + Species, data = iris)
+lm_fit4 <- lm(Sepal.Length ~ Petal.Width + Petal.Length + Sepal.Width + Species,
+ data = iris)
+fits <- list(lm_fit1, lm_fit2, lm_fit3, lm_fit4)
+```
+
+Now let’s use the purrr::map() function to pull out the coefficients of each model fit from the fits object(using pluck!)
+```{r}
+
+```
+ 
+3. There is a function called confint() that creates confidence intervals for the coefficients in an lm()fit. We apply that function directly to the fitted object like this:
+```{r}
+confint(lm_fit1)
+```
+
+Use map() to apply cofint() function to each model in the fits object 
+```{r}
+
+```
+
+4. Next, let’s create histograms of the residuals in each model fit! Run the code here to set up a 2x2 plotting window
+```{r}
+par(mfrow = c(2, 2))
+```
+
+Now, pull out the residual vectors (the resid elements of your fits) using map(). Then use the walk() function with hist to create plots
+```{r}
+
+```
+
+5. That was cool! However, the names stink... Let’s try to fix that! On the list that is created from the map() function used on the resid element, use the purrr::set_names() function to give the names “fit1”, “fit2”, “fit3”, and “fit4” to the list elements.
+```{r}
+
+```
+
+With the names set, we now want to use the walk() function. However, it doesn’t add the names appropriately! (Try it yourself.)
+```{r}
+
+```
+
+Instead, we want to use iwalk(). This is a function under the imap() help
+```{r}
+
+```
+
+This set of functions allows us to use the value and position (name here!) of the element! On the result that has names, use iwalk() with an anonymous function that calls hist() and assigns the names appropriately.
+Note: there is an example function call that is similar at the bottom of the help for the imap() function.
+```{r}
+
+```
+
