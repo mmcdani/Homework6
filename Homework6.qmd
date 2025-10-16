@@ -271,7 +271,9 @@ walk(residuals, ~ hist(.x, main = "Residuals"))
 Instead, we want to use iwalk(). This is a function under the imap() help
 
 ```{r}
-iwalk(\(x, names) hist(x, main = paste('residuals for', names)))
+residuals |> 
+  set_names(c('fit1', 'fit2', 'fit3', 'fit4')) |>
+  iwalk(\(x, names) hist(x, main = paste('Residuals for', names)))
 ```
 
 
