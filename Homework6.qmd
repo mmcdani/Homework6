@@ -2,6 +2,8 @@
 title: "homework6"
 format: html
 editor: visual
+editor_options: 
+  chunk_output_type: console
 ---
 
 ## Task 1: Conceptual Questions
@@ -20,56 +22,89 @@ editor: visual
 
 4.  What is a side-effect function?
 
--   a side effect function is a function that doesnt change the data but produces something some examples are print(), read_csv(), and plot().
+-   a side effect function is a function that doesn't change the data but produces something some examples are print(), read_csv(), and plot().
 
 5.  Why can you name a variable *sd* in a function and not cause any issues with the sd function?
 
-- You can name a variable sd in a function and not cause any issues with the sd function because R searches through environments in order. 
+-   You can name a variable sd in a function and not cause any issues with the sd function because when you call a function it creates a temporary function environments.
 
 ## Task 2: Writing R Functions
 
-1.  When we start doing machine learning later in the course, a common metric used to evaluate predictions is called Root Mean Square Error (RMSE). For a given set of responses \_\*y1,...,yn the RMSE is defined as **add picture**
+1.  When we start doing machine learning later in the course, a common metric used to evaluate predictions is called Root Mean Square Error (RMSE). For a given set of responses \_\*y1,...,yn the RMSE is defined as 
 
-Write a basic function (call it getRMSE()) that takes in a vector of responses and a vector of predictions and outputs RMSE - If a value is missing dor the vector of responses (i.e. an NA is present), allow for addtional arguments to the mean() function (elipses) that removes the NA values in the computaton
+    ![](images/clipboard-3473799762.png)
+
+Write a basic function (call it getRMSE()) that takes in a vector of responses and a vector of predictions and outputs RMSE - If a value is missing for the vector of responses (i.e. an NA is present), allow for additional arguments to the mean() function (elipses) that removes the NA values in the computation
 
 write code here
 
 ```{r}
-
+getRMSE <- function(x, y, na.rm = TRUE, ...) {
+  residuals <- x - y
+  rmse <- sqrt(mean(residuals^2, ...))
+  return(rmse)
+}
 ```
 
 2.  Run the following code to create some response values and predictions
+loading libraries 
+```{r}
+library(tidyverse)
+library(purrr)
+library(jsonlite)
+```
 
 ```{r}
 set.seed(10)
 n <- 100 
 x <- runif(n)
 resp <- 3 + 10 * x + rnorm(n)
-pred <- predict(lm(resp - x), data.frame(x))
+pred <- predict(lm(resp ~ x), data.frame(x))
 ```
 
 test RMSE function using this data
 
 ```{r}
-
+getRMSE <- function(resp, pred, ...) {
+  residuals <- resp - pred
+  rmse <- sqrt(mean(residuals^2, ...))
+  return(rmse)
+}
+getRMSE(resp, pred)
 ```
 
-test again after manually resplaces two of the response values with missing values (NA_real\_)(just assign two valyes to NA_real\_)
+test again after manually replaces two of the response values with missing values (NA_real\_)(just assign two values to NA_real\_)
 
 Test RMSE function with and without specifying the behavior to deal with missing values
 
 ```{r}
 #testing with specifying dealing with missing values 
+resp <- c(1,2, NA, 5)
+pred <- c(4, 8, 12, 16)
+getRMSE(resp, pred, na.rm = FALSE)
 ```
 
 ```{r}
 #testing without specifying how to deal with missing values 
+resp <- c(1,2, NA, 5)
+pred <- c(4, 8, 12, 16)
+getRMSE(resp, pred, na.rm = TRUE)
 ```
 
-3.  Another common metric for evaluating predictions is mean absolute deviation givin by **add picture** Write a function called getMAE() that follows the specifications of the getRMSE() function
+3.  Another common metric for evaluating predictions is mean absolute deviation given by
+
+    ![](images/clipboard-547886608.png)
+
+4.  Write a function called getMAE() that follows the specifications of the getRMSE() function
 
 ```{r}
-getMAE <-
+getMAE <- function(resp, pred, ...) {
+  residuals <- resp - pred
+  mae <- sqrt(mean(residuals^2, ...))
+  return(mae)
+}
+  
+getMAE(resp, pred)
 ```
 
 4.  Run the following code to create some response values and predictions
@@ -85,26 +120,49 @@ pred <- predict(lm(resp ~ x), data.frame(x))
 Test MAE function using this data
 
 ```{r}
-
+getMAE <- function(resp, pred, ...) {
+  residuals <- abs(resp - pred)
+  mae <- mean(residuals, ...)
+  return(mae)
+}
+  
+getMAE(resp, pred)
 ```
 
 Repeat after replacing two of the response values with missing values (NA_real\_) - Test MAE function with and without specifying the behavior to deal with the missing values
 
 ```{r}
 #Testing with specifying how to deal with missing values 
+resp <- c(1,2, NA, 5)
+pred <- c(4, 8, 12, 16)
+getMAE(resp, pred, na.rm = TRUE)
 ```
 
 ```{r}
 #Testing without specifying how to deal with missing values 
+resp <- c(1,2, NA, 5)
+pred <- c(4, 8, 12, 16)
+getRMSE(resp, pred, na.rm = FALSE)
 ```
 
-5.  Lets create a **wrapper** function that can be used to get either or both metrics returned with a single function call. DO not rewwrite your above two functions, call them inside the wrapper function (we would call getRMSE() and getMAE() functions **helper** functions). When returning your values, give them appropriate names additionally the wrapper function should
+5.  Lets create a **wrapper** function that can be used to get either or both metrics returned with a single function call. DO not rewrite your above two functions, call them inside the wrapper function (we would call getRMSE() and getMAE() functions **helper** functions). When returning your values, give them appropriate names additionally the wrapper function should
 
 -   check that the two numeric(atomic) vectors have been passes (consider is.vector(), is.atomic() and is.numeric()). If not, the function should stop and print an informative message.
 -   Return both metrics by default and include names. The behavior should be able to be changed using a character string of metrics to find
 
 ```{r}
-
+getMetrics <- function(resp, pred, metric = c("RMSE", "MAE"), ...) {
+  # Check that data is numeric/atomic
+  if (!is.numeric(resp) || !is.numeric(pred))
+    stop("Both variables must be numeric.")
+  
+  # Compute requested metrics
+  result <- c()
+  if ("RMSE" %in% metric) result["RMSE"] <- getRMSE(resp, pred, ...)
+  if ("MAE"  %in% metric) result["MAE"]  <- getMAE(resp, pred, ...)
+  
+  return(result)
+}
 ```
 
 6.  Run the following code to create some response values and predictions
@@ -120,30 +178,41 @@ pred <- predict(lm(resp ~ x), data.frame(x))
 Test your new function using this data. Call it once asking for each metric individually and once specifying both metrics
 
 ```{r}
-
+getMetrics(resp, pred, na.rm = FALSE)
 ```
 
 Repeat with replacing two of the response values with missing values (NA_real\_)
 
 ```{r}
-
+resp[1:2] <- NA_real_
 ```
 
 Finally, test your function by passing it incorrect data (i.e. a data frame or something else instead of vectors)
 
 ```{r}
-
+getMetrics(resp, pred)
 ```
 
 ## Task 3: Practice with purrr
+import purrr
+```{r}
+library(purrr)
+```
 
 Let’s create an interesting list object we can play around with
 
 ```{r}
- lm_fit1 <- lm(Sepal.Length ~ Sepal.Width + Species, data = iris)
+lm_fit1 <- lm(Sepal.Length ~ Sepal.Width + Species, data = iris)
 ```
 
--   pull of the coefficients list element using \$, coef(), and the pluck() function from purrr
+1. pull of the coefficients list element using \$, coef(), and the pluck() function from purrr
+```{r}
+lm_fit1$coefficients
+coef(lm_fit1)
+lm_fit1 |>
+  pluck(coefficients)
+```
+
 
 lets fit a number of different models with the code below
 
@@ -158,7 +227,7 @@ fits <- list(lm_fit1, lm_fit2, lm_fit3, lm_fit4)
 Now let’s use the purrr::map() function to pull out the coefficients of each model fit from the fits object(using pluck!)
 
 ```{r}
-
+map(fits, confint)
 ```
 
 3.  There is a function called confint() that creates confidence intervals for the coefficients in an lm()fit. We apply that function directly to the fitted object like this:
@@ -170,7 +239,7 @@ confint(lm_fit1)
 Use map() to apply cofint() function to each model in the fits object
 
 ```{r}
-
+map(fits, confint)
 ```
 
 4.  Next, let’s create histograms of the residuals in each model fit! Run the code here to set up a 2x2 plotting window
@@ -182,29 +251,29 @@ par(mfrow = c(2, 2))
 Now, pull out the residual vectors (the resid elements of your fits) using map(). Then use the walk() function with hist to create plots
 
 ```{r}
-
+residuals <- map(fits, resid) |> 
+  walk(hist)
 ```
 
 5.  That was cool! However, the names stink... Let’s try to fix that! On the list that is created from the map() function used on the resid element, use the purrr::set_names() function to give the names “fit1”, “fit2”, “fit3”, and “fit4” to the list elements.
 
 ```{r}
-
+set_names(c('fit1', 'fit2', 'fit3', 'fit4'))
 ```
 
 With the names set, we now want to use the walk() function. However, it doesn’t add the names appropriately! (Try it yourself.)
 
 ```{r}
-
+par(mfrow = c(2,2))
+walk(residuals, ~ hist(.x, main = "Residuals"))
 ```
 
 Instead, we want to use iwalk(). This is a function under the imap() help
 
 ```{r}
-
+iwalk(\(x, names) hist(x, main = paste('residuals for', names)))
 ```
 
-This set of functions allows us to use the value and position (name here!) of the element! On the result that has names, use iwalk() with an anonymous function that calls hist() and assigns the names appropriately. Note: there is an example function call that is similar at the bottom of the help for the imap() function.
 
-```{r}
 
-```
+
